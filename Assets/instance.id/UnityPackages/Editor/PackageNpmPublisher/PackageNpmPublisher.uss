@@ -1,0 +1,19 @@
+.BorderedContainer
+{
+  margin:5px;
+  border-width:1px;
+  border-color: rgba(0,0,0,0.5);
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 5px;
+  padding:5px;
+}
+
+.rowEven
+{
+  background-color: rgba(0,0,0,0.20)
+}
+
+.rowOdd
+{
+  background-color: rgba(0,0,0,0.30)
+}
