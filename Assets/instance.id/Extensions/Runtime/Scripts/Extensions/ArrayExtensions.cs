@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
+using JetBrains.Annotations;
+using Object = UnityEngine.Object;
 
 namespace instance.id.Extensions
 {
@@ -318,6 +320,130 @@ namespace instance.id.Extensions
             }
 
             return count;
+        }
+
+        public static bool ContentsMatch([NotNull]this Object[] source, [CanBeNull]Object[] other)
+        {
+            if(source == other)
+            {
+                return true;
+            }
+
+            if(other == null)
+            {
+                return false;
+            }
+
+            int count = source.Length;
+            if(count != other.Length)
+            {
+                return false;
+            }
+
+            for(int n = 0; n < count; n++)
+            {
+                var item = source[n];
+                if(item == null)
+                {
+                    if(other[n] != null)
+                    {
+                        return false;
+                    }
+                }
+                else if(!item.Equals(other[n]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static readonly object[] TempReusableSingleElementObjectArray = new object[1];
+        private static readonly object[] TempReusableTwoElementObjectArray = new object[2];
+        public static object[] TempObjectArray(object content)
+        {
+            TempReusableSingleElementObjectArray[0] = content;
+            return TempReusableSingleElementObjectArray;
+        }
+
+        public static object[] TempObjectArray(object item1, object item2)
+        {
+            TempReusableTwoElementObjectArray[0] = item1;
+            TempReusableTwoElementObjectArray[1] = item2;
+            return TempReusableTwoElementObjectArray;
+        }
+
+        public static T[] RemoveAt<T>(this T[] source, int index)
+        {
+#if DEV_MODE && PI_ASSERTATIONS
+			Debug.Assert(index >= 0);
+#endif
+
+            int sourceLength = source.Length;
+
+#if DEV_MODE && PI_ASSERTATIONS
+			Debug.Assert(index < sourceLength);
+#endif
+
+            if(sourceLength == 1)
+            {
+                return ArrayTypePool<T>.ZeroSizeArray;
+            }
+
+            var result = new T[sourceLength - 1];
+
+            if(index > 0)
+            {
+                Array.Copy(source, 0, result, 0, index);
+            }
+
+            if(index < sourceLength - 1)
+            {
+                Array.Copy(source, index + 1, result, index, sourceLength - index - 1);
+            }
+
+#if UNITY_EDITOR && DEBUG_REMOVE_AT
+
+			string d = ""+typeof(T)+"[].RemoveAt("+index+") before: ";
+			int n;
+			for(n = 0; n < sourceLength; n++)
+			{
+				if(n == index)
+				{
+					d += "[";
+				}
+
+				d += source[n].ToString();
+
+				if(n == index)
+				{
+					d += "]";
+				}
+
+				if(n != sourceLength - 1)
+				{
+					d += ", ";
+				}
+			}
+
+			UnityEngine.Debug.Log(d);
+
+			d = ""+typeof(T)+"[].RemoveAt("+index+") after: ";
+			for(n = 0; n < sourceLength - 1; n++)
+			{
+				d += result[n].ToString();
+
+				if(n != sourceLength - 2)
+				{
+					d += ", ";
+				}
+			}
+
+			UnityEngine.Debug.Log(d);
+
+#endif
+
+            return result;
         }
     }
 }
