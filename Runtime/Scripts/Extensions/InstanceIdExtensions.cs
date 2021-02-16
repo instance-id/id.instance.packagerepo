@@ -96,6 +96,20 @@ namespace instance.id.Extensions
             return gameObject.GetComponent<T>() != null;
         }
 
+        /// <summary>
+        /// Remove Component from GameObject.
+        /// </summary>
+        /// <param name="GameObject"></param>
+        /// <returns></returns>
+        public static void DestroyGameObject(this GameObject self)
+        {
+#if UNITY_EDITOR
+            GameObject.DestroyImmediate(self);
+#else
+            GameObject.Destroy(self);
+#endif
+        }
+
         // public static bool HasComponent<T>(this GameObject gameObject, out T component) where T : Component
         // {
         //     if (gameObject.GetComponent<T>() != null)

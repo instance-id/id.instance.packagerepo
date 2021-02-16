@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace instance.id.Extensions
 {
-    // Hopefully these features will eventually be in the default TextField eventually.
+    // -- Hopefully these features will eventually be in the default TextField.
     public class BetterTextField : TextField
     {
         /// <summary>
@@ -40,42 +40,21 @@ namespace instance.id.Extensions
             Add(m_PlaceholderLabel);
 
             RegisterCallback<FocusInEvent>(e => HidePlaceholder());
-
-            RegisterCallback<FocusOutEvent>(e =>
-            {
-                if (string.IsNullOrEmpty(text))
-                {
-                    ShowPlaceholder();
-                }
-            });
-
+            RegisterCallback<FocusOutEvent>(e => { if (string.IsNullOrEmpty(text)) ShowPlaceholder(); });
             this.RegisterValueChangedCallback(e => OnValueChangedHandler?.Invoke(e.newValue));
         }
 
-        void UpdatePlaceholderVisibility()
+        private void UpdatePlaceholderVisibility()
         {
             if (string.IsNullOrEmpty(value))
             {
-                if (focusController?.focusedElement != this)
-                {
-                    ShowPlaceholder();
-                }
+                if (focusController?.focusedElement != this) ShowPlaceholder();
             }
-            else
-            {
-                HidePlaceholder();
-            }
+            else HidePlaceholder();
         }
 
-        void HidePlaceholder()
-        {
-            m_PlaceholderLabel?.AddToClassList("hidden");
-        }
-
-        void ShowPlaceholder()
-        {
-            m_PlaceholderLabel?.RemoveFromClassList("hidden");
-        }
+        void HidePlaceholder() => m_PlaceholderLabel?.AddToClassList("hidden");
+        void ShowPlaceholder() => m_PlaceholderLabel?.RemoveFromClassList("hidden");
 
         public override string value
         {

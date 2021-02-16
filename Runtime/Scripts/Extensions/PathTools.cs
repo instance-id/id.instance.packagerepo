@@ -8,8 +8,6 @@ namespace instance.id.Extensions
 {
     public static class PathTools
     {
-
-
         /// <summary>
         /// Checks for existence of specified path, if it does not exist,
         /// it is created and the full path is returned
@@ -156,9 +154,9 @@ namespace instance.id.Extensions
         {
             var folder = Path.GetDirectoryName(callerFilePath);
 
-#if UNITY_EDITOR_WIN
             if (folder != null)
             {
+#if UNITY_EDITOR_WIN
                 folder = folder.Substring(folder.LastIndexOf(@"\Assets\", StringComparison.Ordinal) + 1);
 #else
                 folder = folder.Substring(folder.LastIndexOf("/Assets/", StringComparison.Ordinal) + 1);
