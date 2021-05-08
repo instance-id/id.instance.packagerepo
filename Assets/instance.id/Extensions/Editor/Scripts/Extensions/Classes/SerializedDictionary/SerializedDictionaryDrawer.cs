@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
- using UnityEditor;
+﻿using System;
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
 namespace instance.id.Extensions.Editors
 {
@@ -22,17 +24,22 @@ namespace instance.id.Extensions.Editors
             "LayerTag",
             "PPtr<$LayerTag>",
             "SubStreamEvent",
+            "ObjectID",
             "SerializedScriptableObject",
             "ScriptableObject",
             "Object",
-            "PPtr<$Object>"
+            "PPtr<$Object>",
+            "SubSceneData",
+            "VolumeObject",
+            "ObjectID",
+            "VolumeObject",
+            "GridVolume"
         };
 
         private List<string> guidTypes = new List<string>
         {
             "GuidComponent",
-            "PPtr<$GuidComponent>",
-            // "GuidReference",
+            "PPtr<$GuidComponent>"
         };
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
@@ -57,8 +64,10 @@ namespace instance.id.Extensions.Editors
 
             for (int i = 0; i < propertyKeyField.arraySize; i++)
             {
-                var keyType = propertyKeyField.GetArrayElementAtIndex(i).type;
-                var valueType = propertyValueField.GetArrayElementAtIndex(i).type;
+                var keyTypeString = propertyKeyField.GetArrayElementAtIndex(i).type;
+                var keyType = propertyKeyField.GetArrayElementAtIndex(i).GetType();
+                var valueTypeString = propertyValueField.GetArrayElementAtIndex(i).type;
+                var valueType = propertyValueField.GetArrayElementAtIndex(i).GetType();
 
                 // ----------------------------------------------------------- Dictionary Container
                 // -- Dictionary Container --------------------------------------------------------
@@ -81,10 +90,10 @@ namespace instance.id.Extensions.Editors
                 };
                 keyTextField.tooltip = keyTextField.text;
 
-                switch (valueType)
+                switch (valueTypeString)
                 {
-                    case string a when a.Contains("GuidReference"):
-                    case string b when b.Contains("GuidComponent"):
+                    case { } a when a.Contains("GuidReference"):
+                    case { } b when b.Contains("GuidComponent"):
                         keyTextField.AddToClassList("serialDictionaryKeyGuid");
                         keyTextField.AddToClassList("unity-base-field--no-label");
                         break;
@@ -118,7 +127,14 @@ namespace instance.id.Extensions.Editors
 
                 switch (valueType)
                 {
-                    case string a when objectTypes.Contains(a):
+                    case { } a when objectTypes.Contains(a.Name):
+                    case { } t1 when t1 == typeof(Object):
+                    case { } t2 when typeof(Object).IsSubclassOf(t2):
+                    case { } t3 when typeof(Object).IsAssignableFrom(t3):
+                        
+                    case { } t4 when Convert.GetTypeCode(t4) == TypeCode.Object:
+                    case { } t5 when typeof(Object).IsSubclassOf(t5):
+                    case { } t6 when typeof(Object).IsAssignableFrom(t6):
                         var objectField = new ObjectField
                         {
                             bindingPath = propertyValueField.propertyPath,
@@ -133,7 +149,7 @@ namespace instance.id.Extensions.Editors
                         // objectField.Q(null, "unity-object-field__input").RemoveFromClassList("unity-object-field__input");
                         listValue = objectField;
                         break;
-                    case string b when guidTypes.Contains(b):
+                    case { } b when guidTypes.Contains(b.Name):
                         var guidObjectField = new ObjectField
                         {
                             bindingPath = propertyValueField.propertyPath,
@@ -148,8 +164,7 @@ namespace instance.id.Extensions.Editors
                         // objectField.Q(null, "unity-object-field__input").RemoveFromClassList("unity-object-field__input");
                         listValue = guidObjectField;
                         break;
-                    case string d when d.Contains("int"):
-
+                    case { } d when d == (typeof(int)):
                         var valueTextField = new TextField
                         {
                             bindingPath = propertyValueField.propertyPath,
@@ -161,7 +176,7 @@ namespace instance.id.Extensions.Editors
                         listValue.AddToClassList("serialDictionaryValue");
                         listValue.RemoveFromClassList("unity-base-text-field__input");
                         break;
-                    case string d when d.Contains("Type"):
+                    case { } d when d == typeof(Type):
 
                         var valueTypeTextField = new TextField
                         {
@@ -175,6 +190,11 @@ namespace instance.id.Extensions.Editors
                         listValue.RemoveFromClassList("unity-base-text-field__input");
                         break;
                     default:
+                        if (property.IsReallyArray())
+                        {
+                            listValue = new PropertyField(propertyValueField);
+                        }
+                        
                         listValue.AddToClassList("serialDictionaryValue");
                         listValue.AddToClassList("unity-base-field--no-label");
                         break;
@@ -189,7 +209,6 @@ namespace instance.id.Extensions.Editors
             box.Add(scroller);
             serializedDictionaryFoldout.Add(box);
             container.Add(serializedDictionaryFoldout);
-
 
             return container;
         }

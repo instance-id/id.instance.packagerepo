@@ -1,1 +1,17 @@
-{ "name": "id.instance.extensions.Editor", "references": [ "id.instance.extensions" ], "optionalUnityReferences": [], "includePlatforms": [ "Editor" ], "excludePlatforms": [] }
+{
+    "name": "id.instance.extensions.Editor",
+    "references": [
+        "id.instance.extensions"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

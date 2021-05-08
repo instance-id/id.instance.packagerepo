@@ -68,8 +68,7 @@ namespace instance.id.Extensions
         {
             return property.isArray && property.propertyType != SerializedPropertyType.String;
         }
-
-
+        
         public static Type GetTypeReflection(this SerializedProperty prop)
         {
             // -- The parent object should have a field with a type that matches property.type ----
