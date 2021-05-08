@@ -38,15 +38,8 @@ namespace instance.id.Extensions
         }
 
 
-        void ISerializationCallbackReceiver.OnBeforeSerialize()
-        {
-            ConvertToLists();
-        }
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            ConvertFromLists();
-        }
+        void ISerializationCallbackReceiver.OnBeforeSerialize() => ConvertToLists();
+        void ISerializationCallbackReceiver.OnAfterDeserialize() => ConvertFromLists();
 
         private void ConvertToLists()
         {
@@ -60,14 +53,14 @@ namespace instance.id.Extensions
             }
         }
 
-        private void ConvertFromLists()
+        private void ConvertFromLists() // @formatter:off
         {
             Clear();
 
             var count = Math.Min(_keys.Count, _values.Count);
-
-            for (var i = 0; i < count; i++)
-                Add(_keys[i], _values[i]);
-        }
+            var failed = 0;
+            try { for (var i = 0; i < count; i++) { failed = i; Add(_keys[i], _values[i]); } }
+            catch (Exception e) { Debug.Log(_keys[failed]); throw; }
+        } // @formatter:on
     }
 }

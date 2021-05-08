@@ -6,20 +6,51 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.UIElements.Experimental;
 
 namespace instance.id.Extensions
 {
-    public static class VElementExtensions
+    public static class VisualElementExtension
     {
+#pragma warning disable 67
+        public static event Action onChangeProperty;
+#pragma warning restore 67
         #region General VisualElement
-
         // @formatter:off ------------------------------------------------- Hierarchy Modifications
         // ----------------------------------------------------------------------------------------
-        #region Hierarchical Modifications
+         #region Hierarchical Modifications
         // @formatter:on
+        public static VisualElement CreateEnumField<T>(this T enumField, Action<T> onChange, string label = null)
+        {
+            var e = new EnumField(label, Convert<Enum>(enumField));
+            e.RegisterValueChangedCallback(change => { onChange(Convert<T>(change.newValue)); });
+            return e;
+        }
+
+        public static TextField CreateTextField(this TextField textField, EventCallback<ChangeEvent<string>> evt, string label = null)
+        {
+            textField = new TextField {label = label};
+            textField.RegisterCallback(evt);
+            return textField;
+        }
+
+        public static VisualElement CreateField<T>(this VisualElement fieldElement, T value, EventCallback<ChangeEvent<T>> evt, string label = null)
+        {
+            var lblText = label.Length > 16 ? label.Substring(0, 13) + "..." : label;
+            var field = ElementInspector.GetField<T>(lblText, value, out fieldElement);
+            field.RegisterValueChangedCallback(evt);
+            fieldElement.AddToClassList("eeditor-inspectorField");
+            fieldElement.tooltip = label;
+            var root = new VisualElement();
+            root.Add(fieldElement);
+            root.AddToClassList("eeditor-inspectorProperty");
+            return root;
+        }
+
         /// <summary>
         /// Creates the VisualElement and return it as an out variable which can be chained to .ToUSS()
         /// <example><code>new VisualElement().Create(out var myElement);</code></example>
@@ -105,6 +136,16 @@ namespace instance.id.Extensions
         }
 
         /// <summary>
+        /// Convert an object to another type
+        /// </summary>
+        /// <param name="value">The object in which to convert</param>
+        /// <typeparam name="T">VisualElement</typeparam>
+        static T Convert<T>(object value)
+        {
+            return (T) System.Convert.ChangeType(value, typeof(T));
+        }
+
+        /// <summary>
         /// Add multiple child elements to a parent VisualElement
         /// </summary>
         /// <param name="element">The target element to perform this action upon</param>
@@ -112,11 +153,7 @@ namespace instance.id.Extensions
         /// <typeparam name="T">VisualElement</typeparam>
         public static T Add<T>(this T element, VisualElement[] elements) where T : VisualElement
         {
-            for (var i = 0; i < elements.Length; i++)
-            {
-                element.Add(elements[i]);
-            }
-
+            for (var i = 0; i < elements.Length; i++) element.Add(elements[i]);
             return element;
         }
 
@@ -236,6 +273,34 @@ namespace instance.id.Extensions
         // ----------------------------------------------------------------------------------------
         #region Actions / Helpers
         // @formatter:on
+
+        /// <summary>
+        /// Registers a field for any possible change event type
+        /// </summary>
+        // EventCallback<ChangeEvent<int>> callback, TrickleDown useTrickleDown = TrickleDown.NoTrickleDown)
+        public static void RegisterAnyChangeEvent(this VisualElement field, Action callback)
+        {
+            field.RegisterCallback<ChangeEvent<int>>(e => callback());
+            field.RegisterCallback((ChangeEvent<bool> e) => callback());
+            field.RegisterCallback((ChangeEvent<float> e) => callback());
+            field.RegisterCallback((ChangeEvent<string> e) => callback());
+            field.RegisterCallback((ChangeEvent<Color> e) => callback());
+            field.RegisterCallback((ChangeEvent<UnityEngine.Object> e) => callback());
+            field.RegisterCallback((ChangeEvent<Enum> e) => callback());
+            field.RegisterCallback((ChangeEvent<Vector2> e) => callback());
+            field.RegisterCallback((ChangeEvent<Vector3> e) => callback());
+            field.RegisterCallback((ChangeEvent<Vector4> e) => callback());
+            field.RegisterCallback((ChangeEvent<Rect> e) => callback());
+            field.RegisterCallback((ChangeEvent<AnimationCurve> e) => callback());
+            field.RegisterCallback((ChangeEvent<Bounds> e) => callback());
+            field.RegisterCallback((ChangeEvent<Gradient> e) => callback());
+            field.RegisterCallback((ChangeEvent<Quaternion> e) => callback());
+            field.RegisterCallback((ChangeEvent<Vector2Int> e) => callback());
+            field.RegisterCallback((ChangeEvent<Vector3Int> e) => callback());
+            field.RegisterCallback((ChangeEvent<RectInt> e) => callback());
+            field.RegisterCallback((ChangeEvent<BoundsInt> e) => callback());
+        }
+
         /// <summary>
         /// Opens a web address in an external browser
         /// </summary>
@@ -468,6 +533,81 @@ namespace instance.id.Extensions
         }
 
         #endregion
+
+
+        public static void SetStyleValue<T>(this IStyle style, string propertyName, T value)
+        {
+            typeof(IStyle).GetProperty(propertyName)?.SetValue(style, value);
+        }
+
+        public static T Set<T>(this T v,
+            string name = null,
+            string _class = null,
+            FlexDirection? flexDirection = null,
+            Justify? justifyContent = null,
+            Align? alignItems = null,
+            string background_image = null,
+            float? flexGrow = null,
+            float? maxHeight = null,
+            float? maxWidth = null,
+            float? height = null,
+            float? width = null,
+            Color? color = null,
+            ScaleMode? unityBackgroundScaleMode = null,
+            DisplayStyle? display = null) where T : VisualElement
+        {
+            if (name != null)
+                v.name = name;
+            if (_class != null)
+                v.AddToClassList(_class);
+            if (flexDirection.HasValue)
+                v.style.flexDirection = new StyleEnum<FlexDirection>(flexDirection.Value);
+            if (alignItems.HasValue)
+                v.style.alignItems = new StyleEnum<Align>(alignItems.Value);
+            if (flexGrow.HasValue)
+                v.style.flexGrow = new StyleFloat(flexGrow.Value);
+#if UNITY_EDITOR
+            if (background_image != null)
+                v.style.backgroundImage = new StyleBackground(AssetDatabase.LoadAssetAtPath<Texture2D>(background_image));
+#endif
+            if (maxHeight.HasValue)
+                v.style.maxHeight = maxHeight.Value;
+            if (maxWidth.HasValue)
+                v.style.maxWidth = maxWidth.Value;
+            if (height.HasValue)
+                v.style.height = height.Value;
+            if (width.HasValue)
+                v.style.width = width.Value;
+            if (justifyContent.HasValue)
+                v.style.justifyContent = new StyleEnum<Justify>(justifyContent.Value);
+            if (color.HasValue)
+                v.style.color = new StyleColor(color.Value);
+            if (unityBackgroundScaleMode.HasValue)
+                v.style.unityBackgroundScaleMode = new StyleEnum<ScaleMode>(unityBackgroundScaleMode.Value);
+            if (display.HasValue)
+                v.style.display = display.Value;
+            return v;
+        }
+
+        public static T Set<T>(this T v, string text = null) where T : TextElement
+        {
+            if (text != null)
+                v.text = text;
+            return v;
+        }
+
+        public static T AssignTo<T>(this T v, out T reference) where T : VisualElement
+        {
+            reference = v;
+            return v;
+        }
+
+        public static VisualElement AddRange(this VisualElement v, params VisualElement[] elements)
+        {
+            foreach (var el in elements)
+                v.Add(el);
+            return v;
+        }
 
         // ---------------------------------------------------------------------------------------- Reusable Style Data
         // -- Create Reusable Style Data ---------------------------------

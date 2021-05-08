@@ -1,10 +1,14 @@
 {
     "name": "id.instance.extensions",
-    "rootNamespace": "",
-    "references": [],
+    "references": [
+        "Unity.Collections",
+        "Unity.Mathematics",
+        "Unity.Mathematics.Extensions",
+        "Unity.Mathematics.Extensions.Hybrid"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,

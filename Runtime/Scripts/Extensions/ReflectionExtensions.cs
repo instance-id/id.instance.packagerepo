@@ -117,6 +117,13 @@ namespace instance.id.Extensions
 
             return x;
         }
+        
+        // ------------------------------------------------------------------- CallMethod
+        // -- CallMethod ----------------------------------------------------------------
+        public static void CallMethod(object target, string methodName, object arg0, object arg1)
+        {
+            target.GetType().GetMethod(methodName)?.Invoke(target, new object[] {arg0, arg1});
+        }
 
         // -------------------------------------------------------------- GetFieldViaPath
         // -- GetFieldViaPath -----------------------------------------------------------
